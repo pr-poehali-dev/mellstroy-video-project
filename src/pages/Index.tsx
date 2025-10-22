@@ -196,9 +196,7 @@ const Index = () => {
                 </div>
               </div>
               
-              <h2 className="text-4xl md:text-5xl font-black text-impact mb-4 text-primary">
-                Не пропусти следующий занос!
-              </h2>
+              <h2 className="text-4xl md:text-5xl font-black text-impact mb-4 text-primary">Подписывайся на соц. сети! #MELLSTROYGAME</h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Подписывайся на канал и получай уведомления о новых выигрышах
               </p>
