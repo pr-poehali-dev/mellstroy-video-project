@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Upload file endpoint",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "file": "test_data"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean",
+        "url": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

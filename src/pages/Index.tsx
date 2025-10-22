@@ -2,15 +2,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { useState, useEffect } from "react";
-import AdminPanel from "@/components/AdminPanel";
+import { useState, useEffect, useRef } from "react";
+import AdminPanel, { AdminPanelRef } from "@/components/AdminPanel";
 import VideoModal from "@/components/VideoModal";
+import AuthDialog from "@/components/AuthDialog";
 import type { Video } from "@/components/AdminPanel";
 
 const Index = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const adminPanelRef = useRef<AdminPanelRef>(null);
 
   const API_URL = "https://functions.poehali.dev/a842ae3d-4c06-42eb-9822-98283a367451";
 
@@ -103,11 +107,13 @@ const Index = () => {
                 {videos.map((video, index) => (
                   <Card 
                     key={video.id}
-                    className="group cursor-pointer overflow-hidden bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20"
+                    className="group overflow-hidden bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20"
                     style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => setSelectedVideo(video)}
                   >
-                    <div className="relative aspect-video overflow-hidden">
+                    <div 
+                      className="relative aspect-video overflow-hidden cursor-pointer"
+                      onClick={() => setSelectedVideo(video)}
+                    >
                       <img 
                         src={video.thumbnail_url} 
                         alt={video.title}
@@ -115,12 +121,39 @@ const Index = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 flex gap-2">
                         <Badge className="bg-secondary text-secondary-foreground font-bold text-sm px-3 py-1">
                           <Icon name="Eye" size={16} className="mr-1" />
                           {video.views}
                         </Badge>
                       </div>
+
+                      {isAuthenticated && (
+                        <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="bg-primary/90 hover:bg-primary text-primary-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              adminPanelRef.current?.openEditDialog(video);
+                            }}
+                          >
+                            <Icon name="Edit" size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="bg-secondary/90 hover:bg-secondary text-secondary-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              adminPanelRef.current?.deleteVideo(video.id);
+                            }}
+                          >
+                            <Icon name="Trash2" size={16} />
+                          </Button>
+                        </div>
+                      )}
                       
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="bg-primary rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
@@ -200,15 +233,34 @@ const Index = () => {
               <Icon name="Shield" size={20} className="mr-2" />
               Правила
             </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-              <Icon name="Info" size={20} className="mr-2" />
-              О проекте
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-muted-foreground hover:text-primary"
+              onClick={() => !isAuthenticated && setShowAuthDialog(true)}
+            >
+              <Icon name={isAuthenticated ? "LogOut" : "Lock"} size={20} className="mr-2" />
+              {isAuthenticated ? "Выйти" : "Вход"}
             </Button>
           </div>
         </div>
       </footer>
 
-      <AdminPanel onVideoUpdate={fetchVideos} />
+      {!isAuthenticated && (
+        <Button
+          size="lg"
+          className="fixed bottom-8 right-8 z-50 rounded-full w-16 h-16 shadow-2xl bg-primary/50 hover:bg-primary/70"
+          onClick={() => setShowAuthDialog(true)}
+        >
+          <Icon name="Lock" size={28} />
+        </Button>
+      )}
+
+      <AdminPanel 
+        ref={adminPanelRef}
+        onVideoUpdate={fetchVideos} 
+        isAuthenticated={isAuthenticated}
+      />
       
       {selectedVideo && (
         <VideoModal
@@ -218,6 +270,12 @@ const Index = () => {
           title={selectedVideo.title}
         />
       )}
+
+      <AuthDialog
+        isOpen={showAuthDialog}
+        onClose={() => setShowAuthDialog(false)}
+        onAuthenticated={() => setIsAuthenticated(true)}
+      />
     </div>
   );
 };
