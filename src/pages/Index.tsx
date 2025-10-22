@@ -206,7 +206,12 @@ const Index = () => {
                   <Icon name="Youtube" size={24} className="mr-2" />
                   YouTube
                 </Button>
-                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6 font-bold">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6 font-bold"
+                  onClick={() => window.open('https://t.me/mellstroyhelps', '_blank')}
+                >
                   <Icon name="MessageCircle" size={24} className="mr-2" />
                   Telegram
                 </Button>
