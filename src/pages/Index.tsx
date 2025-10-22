@@ -2,61 +2,34 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import AdminPanel from "@/components/AdminPanel";
+import VideoModal from "@/components/VideoModal";
+import type { Video } from "@/components/AdminPanel";
 
 const Index = () => {
-  const [hoveredVideo, setHoveredVideo] = useState<number | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
-  const winVideos = [
-    {
-      id: 1,
-      title: "НЕВЕРОЯТНЫЙ ЗАНОС 1.5М",
-      views: "2.3M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "1,500,000₽",
-      date: "2 дня назад"
-    },
-    {
-      id: 2,
-      title: "БЕЗУМНАЯ СЕРИЯ X1000",
-      views: "1.8M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "890,000₽",
-      date: "5 дней назад"
-    },
-    {
-      id: 3,
-      title: "РЕКОРДНЫЙ ВЫИГРЫШ",
-      views: "3.1M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "2,100,000₽",
-      date: "1 неделю назад"
-    },
-    {
-      id: 4,
-      title: "ДЖЕКПОТ В ПРЯМОМ ЭФИРЕ",
-      views: "4.2M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "3,750,000₽",
-      date: "2 недели назад"
-    },
-    {
-      id: 5,
-      title: "МАКСИМАЛЬНЫЙ ЗАНОС",
-      views: "2.9M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "1,200,000₽",
-      date: "3 недели назад"
-    },
-    {
-      id: 6,
-      title: "ЛЕГЕНДАРНАЯ РАЗДАЧА",
-      views: "1.5M",
-      thumbnail: "https://v3b.fal.media/files/b/lion/LzS38c7XnQrtshbubFg9b_output.png",
-      amount: "650,000₽",
-      date: "1 месяц назад"
+  const API_URL = "https://functions.poehali.dev/a842ae3d-4c06-42eb-9822-98283a367451";
+
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setVideos(data);
+    } catch (error) {
+      console.error("Failed to fetch videos:", error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,7 +62,7 @@ const Index = () => {
               </Badge>
               <Badge variant="outline" className="text-lg px-6 py-3 bg-secondary/10 border-secondary text-secondary hover:bg-secondary/20">
                 <Icon name="TrendingUp" size={20} className="mr-2" />
-                100+ выигрышей
+                {videos.length}+ выигрышей
               </Badge>
               <Badge variant="outline" className="text-lg px-6 py-3 bg-primary/10 border-primary text-primary hover:bg-primary/20">
                 <Icon name="DollarSign" size={20} className="mr-2" />
@@ -97,10 +70,16 @@ const Index = () => {
               </Badge>
             </div>
             
-            <Button size="lg" className="text-xl px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-2xl hover:scale-105 transition-transform">
-              <Icon name="Play" size={24} className="mr-2" />
-              Смотреть последний выигрыш
-            </Button>
+            {videos.length > 0 && (
+              <Button 
+                size="lg" 
+                className="text-xl px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-2xl hover:scale-105 transition-transform"
+                onClick={() => setSelectedVideo(videos[0])}
+              >
+                <Icon name="Play" size={24} className="mr-2" />
+                Смотреть последний выигрыш
+              </Button>
+            )}
           </div>
 
           <div className="mb-12">
@@ -114,59 +93,62 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {winVideos.map((video, index) => (
-                <Card 
-                  key={video.id}
-                  className="group cursor-pointer overflow-hidden bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  onMouseEnter={() => setHoveredVideo(video.id)}
-                  onMouseLeave={() => setHoveredVideo(null)}
-                >
-                  <div className="relative aspect-video overflow-hidden">
-                    <img 
-                      src={video.thumbnail} 
-                      alt={video.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                    
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-secondary text-secondary-foreground font-bold text-sm px-3 py-1">
-                        <Icon name="Eye" size={16} className="mr-1" />
-                        {video.views}
-                      </Badge>
-                    </div>
-                    
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="bg-primary rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
-                        <Icon name="Play" size={32} className="text-primary-foreground" />
-                      </div>
-                    </div>
-                    
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 bg-primary/90 px-3 py-1 rounded-full">
-                          <Icon name="DollarSign" size={20} className="text-primary-foreground" />
-                          <span className="font-black text-primary-foreground text-lg">
-                            {video.amount}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="bg-black/50 border-primary/50 text-white">
-                          {video.date}
+            {loading ? (
+              <div className="text-center py-12">
+                <Icon name="Loader2" size={48} className="animate-spin text-primary mx-auto" />
+                <p className="mt-4 text-muted-foreground">Загрузка видео...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.map((video, index) => (
+                  <Card 
+                    key={video.id}
+                    className="group cursor-pointer overflow-hidden bg-card border-2 border-border hover:border-primary transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => setSelectedVideo(video)}
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      <img 
+                        src={video.thumbnail_url} 
+                        alt={video.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                      
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-secondary text-secondary-foreground font-bold text-sm px-3 py-1">
+                          <Icon name="Eye" size={16} className="mr-1" />
+                          {video.views}
                         </Badge>
                       </div>
+                      
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="bg-primary rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform">
+                          <Icon name="Play" size={32} className="text-primary-foreground" />
+                        </div>
+                      </div>
+                      
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 bg-primary/90 px-3 py-1 rounded-full">
+                            <Icon name="DollarSign" size={20} className="text-primary-foreground" />
+                            <span className="font-black text-primary-foreground text-lg">
+                              {video.amount}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="p-4">
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                      {video.title}
-                    </h3>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                    
+                    <div className="p-4">
+                      <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {video.title}
+                      </h3>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-2xl p-8 md:p-12 text-center border-2 border-primary/50 relative overflow-hidden">
@@ -225,6 +207,17 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <AdminPanel onVideoUpdate={fetchVideos} />
+      
+      {selectedVideo && (
+        <VideoModal
+          isOpen={!!selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+          videoUrl={selectedVideo.video_url}
+          title={selectedVideo.title}
+        />
+      )}
     </div>
   );
 };
